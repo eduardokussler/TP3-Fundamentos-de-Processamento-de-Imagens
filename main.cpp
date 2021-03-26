@@ -21,8 +21,22 @@
 #define NEGATIVE_MIN 110// n
 #define BRIGHTNESS 82 // R
 #define BRIGHTNESS_MIN 114 // r
+#define ROTATE_LEFT 74// J
+#define ROTATE_LEFT_MIN 106//j
+#define ROTATE_RIGHT 75// K
+#define ROTATE_RIGHT_MIN 107//k
+#define FLIP_HORIZONTAL 72// H
+#define FLIP_HORIZONTAL_MIN 104// h
+#define FLIP_VERTICAL 73//I
+#define FLIP_VERTICAL_MIN 105//i
+#define CONTRAST 79//O
+#define CONTRAST_MIN 111//o
+#define RECORDING 84// T
+#define RECORDING_MIN 116//t
 using namespace cv;
 
+// TODO
+//Configure recording to function with grayscale operations
 
 Mat sobelFilter(Mat frame);
 Mat gaussFilter(Mat frame, int kernelSize);
@@ -31,6 +45,11 @@ Mat calcLuminance(Mat frame);
 Mat resizeVideo(Mat frame);
 Mat calcNegative(Mat frame);
 Mat adjustBrightness(Mat frame, int value);
+Mat rotateLeft(Mat frame);
+Mat rotateRight(Mat frame); 
+Mat flipHorizontally(Mat frame);
+Mat flipVertically(Mat frame);
+Mat adjustContrast(Mat frame, int value);
 void displayFunctions();
 void displayFrame(Mat frame, Mat resultFrame);
 
@@ -39,54 +58,82 @@ int main(int argc, char** argv)
     Mat frame;
     Mat resultFrame;
     int camera = 0;
-    // Mode indicates which function is active at a given moment
-    int mode = DO_NOTHING;
+    // The following variables indicates what features are active
+    bool sobel          = false;
+    bool gauss          = false;
+    bool edges          = false;
+    bool grayscale      = false;
+    bool resize         = false;
+    bool negative       = false;
+    bool brightness     = false;
+    bool rotateRightF   = false;
+    bool rotateLeftF    = false;
+    bool recording      = false;
+    bool flipHorizontal = false;
+    bool flipVertical   = false;
+    bool contrast       = false;
     // -1 indicates that no key has been pressed 
     int keyPressed = -1;
     VideoCapture cap;
     // open the default camera, use something different from 0 otherwise;
     // Check VideoCapture documentation. 
+    
     int value = 3;
     namedWindow("Result Video", WINDOW_NORMAL);
     namedWindow("Original", WINDOW_GUI_NORMAL);
     createTrackbar("track1", "Result Video", &value, 255, NULL);
     if (!cap.open(camera))
         return 0;
+    cap >> frame;
+    VideoWriter videoOut;
+    videoOut.open("./output.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), 20, frame.size());
     displayFunctions();
     while(true)
     {
         cap >> frame;
         resultFrame = frame;
         if (frame.empty()) break; // end of video stream
-        switch (mode)
-        {
-        case DO_NOTHING:
-            resultFrame = frame;
-            break;
-        case SOBEL:
-            resultFrame = sobelFilter(frame);
-            break;
-        case GAUSS:
-            resultFrame = gaussFilter(frame, value);
-            break;
-        case EDGES:
-            resultFrame = detectEdges(frame);
-            break;
-        case GRAYSCALE:
-            resultFrame = calcLuminance(frame);
-            break;
-        case RESIZE:
-            resultFrame = resizeVideo(frame);
-            break;
-        case NEGATIVE:
-            resultFrame = calcNegative(frame);
-            break;
-        case BRIGHTNESS:
-            resultFrame = adjustBrightness(frame, value);
-            break;
-        default:
-            continue;
+        if(sobel) {
+            resultFrame = sobelFilter(resultFrame);
         }
+        if(gauss) {
+            resultFrame = gaussFilter(resultFrame, value);
+        }
+        if(edges){
+            resultFrame = detectEdges(resultFrame);
+        }
+        if(grayscale) {
+            resultFrame = calcLuminance(resultFrame);
+        }
+        if(resize && !recording) {
+            resultFrame = resizeVideo(resultFrame);
+        }
+        if(negative) {
+            resultFrame = calcNegative(resultFrame);
+        }
+        if(brightness) {
+            resultFrame = adjustBrightness(resultFrame, value);
+        }
+        if(rotateLeftF && !recording) {
+            resultFrame = rotateLeft(resultFrame);
+        }
+        if(rotateRightF && !recording) {
+            resultFrame = rotateRight(resultFrame);
+        }
+        if(contrast) {
+            resultFrame = adjustContrast(resultFrame, value);
+        }
+        if(flipHorizontal) {
+            resultFrame = flipHorizontally(resultFrame);
+        }
+        if(flipVertical) {
+            resultFrame = flipVertically(resultFrame);
+        }
+        if(recording) {
+            videoOut.write(resultFrame);
+        }
+
+
         displayFrame(frame, resultFrame);
         keyPressed = waitKey(1);
         if(keyPressed == -1) {
@@ -94,30 +141,69 @@ int main(int argc, char** argv)
         } else if(keyPressed == ESC){
             break;
         } else if(keyPressed == DO_NOTHING || keyPressed == DO_NOTHING_MIN) {
-            mode = DO_NOTHING;
+            sobel      = false;
+            gauss      = false;
+            edges      = false;
+            grayscale  = false;
+            resize     = false;
+            negative   = false;
+            brightness = false;
         } else if(keyPressed == SOBEL || keyPressed == SOBEL_MIN) {
-            mode = SOBEL;
+            sobel = !sobel;
         } else if(keyPressed == GAUSS || keyPressed == GAUSS_MIN) {
-            mode = GAUSS;
+            gauss = !gauss;
         } else if(keyPressed == EDGES || keyPressed == EDGES_MIN) {
-            mode = EDGES;
+            edges = !edges;
         } else if(keyPressed == GRAYSCALE || keyPressed == GRAYSCALE_MIN) {
-            mode = GRAYSCALE;
+            grayscale = !grayscale;
         } else if(keyPressed == RESIZE || keyPressed == RESIZE_MIN) {
-            mode = RESIZE;
+            resize = !resize;
         } else if(keyPressed == NEGATIVE || keyPressed == NEGATIVE_MIN) {
-            mode = NEGATIVE;
+            negative = !negative;
         } else if(keyPressed == BRIGHTNESS || keyPressed == BRIGHTNESS_MIN) {
-            mode = BRIGHTNESS;
+            brightness = !brightness;
+        } else if(keyPressed == ROTATE_LEFT || keyPressed == ROTATE_LEFT_MIN) {
+            rotateLeftF = !rotateLeftF;
+        } else if(keyPressed == ROTATE_RIGHT || keyPressed == ROTATE_RIGHT_MIN) {
+            rotateRightF = !rotateRightF;
+        } else if(keyPressed == FLIP_HORIZONTAL || keyPressed == FLIP_HORIZONTAL_MIN) {
+            flipHorizontal = !flipHorizontal;
+        } else if(keyPressed == FLIP_VERTICAL || keyPressed == FLIP_VERTICAL_MIN) {
+            flipVertical = !flipVertical;
+        } else if(keyPressed == RECORDING || keyPressed == RECORDING_MIN) {
+            recording = !recording;
+            resize = false;
+            rotateLeftF = false;
+            rotateRightF = false;
+        } else if(keyPressed == CONTRAST || keyPressed == CONTRAST_MIN) {
+            contrast = !contrast;
         }
         
     }
     cap.release();  // release the VideoCapture object
+    videoOut.release();
+    destroyAllWindows();
     return 0;
 }
 
 void displayFunctions() {
-
+    std::cout.clear();
+    std::cout << "Clear filters: " << (char)DO_NOTHING << " or " << (char) DO_NOTHING_MIN << std::endl;
+    std::cout << "Sobel filter: " << (char) SOBEL << " or " << (char) SOBEL_MIN << std::endl;
+    std::cout << "Gauss filter: " << (char) GAUSS << " or " << (char) GAUSS_MIN << std::endl;
+    std::cout << "Detect edges: " << (char) EDGES << " or " << (char) EDGES_MIN << std::endl;
+    std::cout << "Grayscale: " << (char) GRAYSCALE << " or " << (char) GRAYSCALE_MIN << std::endl;
+    std::cout << "Resize (1/2, both dimensions): " << (char) RESIZE << " or " << (char) RESIZE_MIN << std::endl;
+    std::cout << "Negative: " << (char)NEGATIVE << " or " << (char) NEGATIVE_MIN << std::endl;
+    std::cout << "Enhance brightness: " << (char) BRIGHTNESS << " or " << (char) BRIGHTNESS_MIN << std::endl;
+    std::cout << "Rotate video 90º left: " << (char) ROTATE_LEFT << " or " << (char) ROTATE_LEFT_MIN << std::endl;
+    std::cout << "Rotate video 90º right: " << (char) ROTATE_RIGHT << " or " << (char) ROTATE_RIGHT_MIN << std::endl;
+    std::cout << "Flip video horizontally: " << (char)FLIP_HORIZONTAL << " or " << (char) FLIP_HORIZONTAL_MIN << std::endl;
+    std::cout << "Flip video vertically: " << (char) FLIP_VERTICAL << " or " << (char) FLIP_VERTICAL_MIN << std::endl;
+    std::cout << "Change contrast: " << (char) CONTRAST << " or " << (char) CONTRAST_MIN << std::endl;
+    std::cout << "Toggle recording: " << (char) RECORDING << " or " << (char) RECORDING_MIN << std::endl;
+    
+    std::cout << "PRESS ESC TO EXIT" << std::endl;
 }
 
 void displayFrame(Mat frame, Mat resultFrame) {
@@ -152,7 +238,7 @@ Mat gaussFilter(Mat frame, int kernelSize) {
 
 Mat calcLuminance(Mat frame) {
     Mat resultFrame;
-    cvtColor(frame, resultFrame, COLOR_BGR2GRAY);
+    cvtColor(frame, resultFrame, COLOR_BGR2GRAY, 0);
     return resultFrame;
 }
 
@@ -181,5 +267,35 @@ Mat calcNegative(Mat frame) {
 Mat adjustBrightness(Mat frame, int value) {
     Mat resultFrame;
     frame.convertTo(resultFrame, -1, 1, value);
+    return resultFrame;
+}
+
+Mat rotateLeft(Mat frame) {
+    Mat resultFrame;
+    rotate(frame, resultFrame, ROTATE_90_COUNTERCLOCKWISE);
+    return resultFrame;
+}
+
+Mat rotateRight(Mat frame) {
+    Mat resultFrame;
+    rotate(frame, resultFrame, ROTATE_90_CLOCKWISE);
+    return resultFrame;
+}
+
+Mat flipHorizontally(Mat frame) {
+    Mat resultFrame;
+    flip(frame, resultFrame, 1);
+    return resultFrame;
+}
+Mat flipVertically(Mat frame) {
+    Mat resultFrame;
+    flip(frame, resultFrame, 0);
+    return resultFrame;
+}
+
+
+Mat adjustContrast(Mat frame, int value) {
+    Mat resultFrame;
+    frame.convertTo(resultFrame, -1, (double)value/127, 0);
     return resultFrame;
 }
