@@ -86,7 +86,7 @@ int main(int argc, char** argv)
         return 0;
     cap >> frame;
     VideoWriter videoOut;
-    videoOut.open("./output.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), 20, frame.size());
+    videoOut.open("./output.avi",VideoWriter::fourcc('M', 'J', 'P', 'G'), 10, frame.size());
     displayFunctions();
     while(true)
     {
@@ -237,8 +237,11 @@ Mat gaussFilter(Mat frame, int kernelSize) {
 }
 
 Mat calcLuminance(Mat frame) {
-    Mat resultFrame;
-    cvtColor(frame, resultFrame, COLOR_BGR2GRAY, 0);
+    Mat resultFrame(frame.rows, frame.cols, frame.type());
+    // std::cout << "ANTES cvtColor: " << resultFrame.channels() << std::endl;
+    cvtColor(frame, resultFrame, COLOR_RGB2GRAY, 3);
+    cvtColor(resultFrame, resultFrame, COLOR_GRAY2RGB, 3);
+    // std::cout << "DEPOIS cvtColor: "<< resultFrame.channels() << std::endl;
     return resultFrame;
 }
 

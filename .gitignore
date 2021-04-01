@@ -26,3 +26,5 @@ CMakeFiles/TP3.dir/link.txt
 CMakeFiles/TP3.dir/progress.make
 Makefile
 output.avi
+*.o
+*.json
