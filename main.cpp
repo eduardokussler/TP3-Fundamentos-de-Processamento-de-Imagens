@@ -74,14 +74,17 @@ int main(int argc, char** argv)
     bool contrast       = false;
     // -1 indicates that no key has been pressed 
     int keyPressed = -1;
+    // Counts how many rotations of 90º - max 3
+    int rotationsLeft = 0;
+    int rotationsRight = 0;
     VideoCapture cap;
     // open the default camera, use something different from 0 otherwise;
     // Check VideoCapture documentation. 
     
     int value = 3;
     namedWindow("Result Video", WINDOW_NORMAL);
-    namedWindow("Original", WINDOW_GUI_NORMAL);
-    createTrackbar("track1", "Result Video", &value, 255, NULL);
+    namedWindow("Original", WINDOW_NORMAL);
+    createTrackbar("track1", "Original", &value, 255, NULL);
     if (!cap.open(camera))
         return 0;
     cap >> frame;
@@ -106,7 +109,10 @@ int main(int argc, char** argv)
             resultFrame = calcLuminance(resultFrame);
         }
         if(resize && !recording) {
+            std::cout << "Before resize: " << resultFrame.size() << std::endl;
             resultFrame = resizeVideo(resultFrame);
+            resizeWindow("Result Video", resultFrame.size()/2);
+            std::cout << "After resize: " << resultFrame.size() << std::endl;
         }
         if(negative) {
             resultFrame = calcNegative(resultFrame);
@@ -115,10 +121,12 @@ int main(int argc, char** argv)
             resultFrame = adjustBrightness(resultFrame, value);
         }
         if(rotateLeftF && !recording) {
-            resultFrame = rotateLeft(resultFrame);
+            for (int i = 0; i < rotationsLeft; i++)
+                resultFrame = rotateRight(resultFrame);
         }
         if(rotateRightF && !recording) {
-            resultFrame = rotateRight(resultFrame);
+            for (int i = 0; i < rotationsRight; i++)
+                resultFrame = rotateRight(resultFrame);
         }
         if(contrast) {
             resultFrame = adjustContrast(resultFrame, value);
@@ -141,13 +149,19 @@ int main(int argc, char** argv)
         } else if(keyPressed == ESC){
             break;
         } else if(keyPressed == DO_NOTHING || keyPressed == DO_NOTHING_MIN) {
-            sobel      = false;
-            gauss      = false;
-            edges      = false;
-            grayscale  = false;
-            resize     = false;
-            negative   = false;
-            brightness = false;
+            sobel          = false;
+            gauss          = false;
+            edges          = false;
+            resize         = false;
+            negative       = false;
+            brightness     = false;
+            grayscale      = false;
+            rotateRightF   = false;
+            rotateLeftF    = false;
+            recording      = false;
+            flipHorizontal = false;
+            flipVertical   = false;
+            contrast       = false;
         } else if(keyPressed == SOBEL || keyPressed == SOBEL_MIN) {
             sobel = !sobel;
         } else if(keyPressed == GAUSS || keyPressed == GAUSS_MIN) {
@@ -156,16 +170,32 @@ int main(int argc, char** argv)
             edges = !edges;
         } else if(keyPressed == GRAYSCALE || keyPressed == GRAYSCALE_MIN) {
             grayscale = !grayscale;
-        } else if(keyPressed == RESIZE || keyPressed == RESIZE_MIN) {
+        } else if((keyPressed == RESIZE || keyPressed == RESIZE_MIN) && !recording) {
             resize = !resize;
         } else if(keyPressed == NEGATIVE || keyPressed == NEGATIVE_MIN) {
             negative = !negative;
         } else if(keyPressed == BRIGHTNESS || keyPressed == BRIGHTNESS_MIN) {
             brightness = !brightness;
-        } else if(keyPressed == ROTATE_LEFT || keyPressed == ROTATE_LEFT_MIN) {
-            rotateLeftF = !rotateLeftF;
-        } else if(keyPressed == ROTATE_RIGHT || keyPressed == ROTATE_RIGHT_MIN) {
-            rotateRightF = !rotateRightF;
+        } else if((keyPressed == ROTATE_LEFT || keyPressed == ROTATE_LEFT_MIN) && !recording) {
+            if(rotationsLeft == 0) {
+                rotateLeftF = true;
+                rotationsLeft++;
+            } else if(rotationsLeft < 3) {
+                rotationsLeft++;
+            } else {
+                rotationsLeft = 0;
+                rotateLeftF = false;
+            }
+        } else if((keyPressed == ROTATE_RIGHT || keyPressed == ROTATE_RIGHT_MIN) && !recording) {
+            if(rotationsRight == 0) {
+                rotateRightF = true;
+                rotationsRight++;
+            } else if(rotationsRight < 3) {
+                rotationsRight++;
+            } else {
+                rotationsRight = 0;
+                rotateRightF = false;
+            }
         } else if(keyPressed == FLIP_HORIZONTAL || keyPressed == FLIP_HORIZONTAL_MIN) {
             flipHorizontal = !flipHorizontal;
         } else if(keyPressed == FLIP_VERTICAL || keyPressed == FLIP_VERTICAL_MIN) {
