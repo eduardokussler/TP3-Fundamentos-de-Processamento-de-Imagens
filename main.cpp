@@ -46,7 +46,7 @@ Mat resizeVideo(Mat frame);
 Mat calcNegative(Mat frame);
 Mat adjustBrightness(Mat frame, int value);
 Mat rotateLeft(Mat frame);
-Mat rotateRight(Mat frame); 
+Mat rotateRight(Mat frame);
 Mat flipHorizontally(Mat frame);
 Mat flipVertically(Mat frame);
 Mat adjustContrast(Mat frame, int value);
@@ -59,19 +59,19 @@ int main(int argc, char** argv)
     Mat resultFrame;
     int camera = 0;
     // The following variables indicates what features are active
-    bool sobel          = false;
-    bool gauss          = false;
-    bool edges          = false;
-    bool grayscale      = false;
-    bool resize         = false;
-    bool negative       = false;
-    bool brightness     = false;
-    bool rotateRightF   = false;
-    bool rotateLeftF    = false;
-    bool recording      = false;
+    bool sobel = false;
+    bool gauss = false;
+    bool edges = false;
+    bool grayscale = false;
+    bool resize = false;
+    bool negative = false;
+    bool brightness = false;
+    bool rotateRightF = false;
+    bool rotateLeftF = false;
+    bool recording = false;
     bool flipHorizontal = false;
-    bool flipVertical   = false;
-    bool contrast       = false;
+    bool flipVertical = false;
+    bool contrast = false;
     // -1 indicates that no key has been pressed 
     int keyPressed = -1;
     // Counts how many rotations of 90º - max 3
@@ -80,75 +80,75 @@ int main(int argc, char** argv)
     VideoCapture cap;
     // open the default camera, use something different from 0 otherwise;
     // Check VideoCapture documentation. 
-    
+
     int value = 3;
-    namedWindow("Result Video", WINDOW_NORMAL);
-    namedWindow("Original", WINDOW_NORMAL);
+    namedWindow("Result Video", WINDOW_AUTOSIZE);
+    namedWindow("Original", WINDOW_AUTOSIZE);
     createTrackbar("track1", "Original", &value, 255, NULL);
     if (!cap.open(camera))
         return 0;
     cap >> frame;
     VideoWriter videoOut;
-    videoOut.open("./output.avi",VideoWriter::fourcc('M', 'J', 'P', 'G'), 10, frame.size());
+    videoOut.open("./output.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), 10, frame.size());
     displayFunctions();
-    while(true)
+    while (true)
     {
         cap >> frame;
         resultFrame = frame;
         if (frame.empty()) break; // end of video stream
-        if(sobel) {
+        if (sobel) {
             resultFrame = sobelFilter(resultFrame);
         }
-        if(gauss) {
+        if (gauss) {
             resultFrame = gaussFilter(resultFrame, value);
         }
-        if(edges){
+        if (edges) {
             resultFrame = detectEdges(resultFrame);
         }
-        if(grayscale) {
+        if (grayscale) {
             resultFrame = calcLuminance(resultFrame);
         }
-        if(resize && !recording) {
-            std::cout << "Before resize: " << resultFrame.size() << std::endl;
+        if (resize && !recording) {
             resultFrame = resizeVideo(resultFrame);
-            resizeWindow("Result Video", resultFrame.size()/2);
-            std::cout << "After resize: " << resultFrame.size() << std::endl;
+            //resizeWindow("Result Video", resultFrame.size() / 2);
         }
-        if(negative) {
+        if (negative) {
             resultFrame = calcNegative(resultFrame);
         }
-        if(brightness) {
+        if (brightness) {
             resultFrame = adjustBrightness(resultFrame, value);
         }
-        if(rotateLeftF && !recording) {
+        if (rotateLeftF && !recording) {
             for (int i = 0; i < rotationsLeft; i++)
                 resultFrame = rotateRight(resultFrame);
         }
-        if(rotateRightF && !recording) {
+        if (rotateRightF && !recording) {
             for (int i = 0; i < rotationsRight; i++)
                 resultFrame = rotateRight(resultFrame);
         }
-        if(contrast) {
+        if (contrast) {
             resultFrame = adjustContrast(resultFrame, value);
         }
-        if(flipHorizontal) {
+        if (flipHorizontal) {
             resultFrame = flipHorizontally(resultFrame);
         }
-        if(flipVertical) {
+        if (flipVertical) {
             resultFrame = flipVertically(resultFrame);
         }
-        if(recording) {
+        if (recording) {
             videoOut.write(resultFrame);
         }
 
 
         displayFrame(frame, resultFrame);
         keyPressed = waitKey(1);
-        if(keyPressed == -1) {
+        if (keyPressed == -1) {
             continue;
-        } else if(keyPressed == ESC){
+        }
+        else if (keyPressed == ESC) {
             break;
-        } else if(keyPressed == DO_NOTHING || keyPressed == DO_NOTHING_MIN) {
+        }
+        else if (keyPressed == DO_NOTHING || keyPressed == DO_NOTHING_MIN) {
             sobel          = false;
             gauss          = false;
             edges          = false;
@@ -158,57 +158,73 @@ int main(int argc, char** argv)
             grayscale      = false;
             rotateRightF   = false;
             rotateLeftF    = false;
-            recording      = false;
             flipHorizontal = false;
             flipVertical   = false;
             contrast       = false;
-        } else if(keyPressed == SOBEL || keyPressed == SOBEL_MIN) {
+        }
+        else if (keyPressed == SOBEL || keyPressed == SOBEL_MIN) {
             sobel = !sobel;
-        } else if(keyPressed == GAUSS || keyPressed == GAUSS_MIN) {
+        }
+        else if (keyPressed == GAUSS || keyPressed == GAUSS_MIN) {
             gauss = !gauss;
-        } else if(keyPressed == EDGES || keyPressed == EDGES_MIN) {
+        }
+        else if (keyPressed == EDGES || keyPressed == EDGES_MIN) {
             edges = !edges;
-        } else if(keyPressed == GRAYSCALE || keyPressed == GRAYSCALE_MIN) {
+        }
+        else if (keyPressed == GRAYSCALE || keyPressed == GRAYSCALE_MIN) {
             grayscale = !grayscale;
-        } else if((keyPressed == RESIZE || keyPressed == RESIZE_MIN) && !recording) {
+        }
+        else if ((keyPressed == RESIZE || keyPressed == RESIZE_MIN) && !recording) {
             resize = !resize;
-        } else if(keyPressed == NEGATIVE || keyPressed == NEGATIVE_MIN) {
+        }
+        else if (keyPressed == NEGATIVE || keyPressed == NEGATIVE_MIN) {
             negative = !negative;
-        } else if(keyPressed == BRIGHTNESS || keyPressed == BRIGHTNESS_MIN) {
+        }
+        else if (keyPressed == BRIGHTNESS || keyPressed == BRIGHTNESS_MIN) {
             brightness = !brightness;
-        } else if((keyPressed == ROTATE_LEFT || keyPressed == ROTATE_LEFT_MIN) && !recording) {
-            if(rotationsLeft == 0) {
+        }
+        else if ((keyPressed == ROTATE_LEFT || keyPressed == ROTATE_LEFT_MIN) && !recording) {
+            if (rotationsLeft == 0) {
                 rotateLeftF = true;
                 rotationsLeft++;
-            } else if(rotationsLeft < 3) {
+            }
+            else if (rotationsLeft < 3) {
                 rotationsLeft++;
-            } else {
+            }
+            else {
                 rotationsLeft = 0;
                 rotateLeftF = false;
             }
-        } else if((keyPressed == ROTATE_RIGHT || keyPressed == ROTATE_RIGHT_MIN) && !recording) {
-            if(rotationsRight == 0) {
+        }
+        else if ((keyPressed == ROTATE_RIGHT || keyPressed == ROTATE_RIGHT_MIN) && !recording) {
+            if (rotationsRight == 0) {
                 rotateRightF = true;
                 rotationsRight++;
-            } else if(rotationsRight < 3) {
+            }
+            else if (rotationsRight < 3) {
                 rotationsRight++;
-            } else {
+            }
+            else {
                 rotationsRight = 0;
                 rotateRightF = false;
             }
-        } else if(keyPressed == FLIP_HORIZONTAL || keyPressed == FLIP_HORIZONTAL_MIN) {
+        }
+        else if (keyPressed == FLIP_HORIZONTAL || keyPressed == FLIP_HORIZONTAL_MIN) {
             flipHorizontal = !flipHorizontal;
-        } else if(keyPressed == FLIP_VERTICAL || keyPressed == FLIP_VERTICAL_MIN) {
+        }
+        else if (keyPressed == FLIP_VERTICAL || keyPressed == FLIP_VERTICAL_MIN) {
             flipVertical = !flipVertical;
-        } else if(keyPressed == RECORDING || keyPressed == RECORDING_MIN) {
+        }
+        else if (keyPressed == RECORDING || keyPressed == RECORDING_MIN) {
             recording = !recording;
             resize = false;
             rotateLeftF = false;
             rotateRightF = false;
-        } else if(keyPressed == CONTRAST || keyPressed == CONTRAST_MIN) {
+        }
+        else if (keyPressed == CONTRAST || keyPressed == CONTRAST_MIN) {
             contrast = !contrast;
         }
-        
+
     }
     cap.release();  // release the VideoCapture object
     videoOut.release();
@@ -218,21 +234,21 @@ int main(int argc, char** argv)
 
 void displayFunctions() {
     std::cout.clear();
-    std::cout << "Clear filters: " << (char)DO_NOTHING << " or " << (char) DO_NOTHING_MIN << std::endl;
-    std::cout << "Sobel filter: " << (char) SOBEL << " or " << (char) SOBEL_MIN << std::endl;
-    std::cout << "Gauss filter: " << (char) GAUSS << " or " << (char) GAUSS_MIN << std::endl;
-    std::cout << "Detect edges: " << (char) EDGES << " or " << (char) EDGES_MIN << std::endl;
-    std::cout << "Grayscale: " << (char) GRAYSCALE << " or " << (char) GRAYSCALE_MIN << std::endl;
-    std::cout << "Resize (1/2, both dimensions): " << (char) RESIZE << " or " << (char) RESIZE_MIN << std::endl;
-    std::cout << "Negative: " << (char)NEGATIVE << " or " << (char) NEGATIVE_MIN << std::endl;
-    std::cout << "Enhance brightness: " << (char) BRIGHTNESS << " or " << (char) BRIGHTNESS_MIN << std::endl;
-    std::cout << "Rotate video 90º left: " << (char) ROTATE_LEFT << " or " << (char) ROTATE_LEFT_MIN << std::endl;
-    std::cout << "Rotate video 90º right: " << (char) ROTATE_RIGHT << " or " << (char) ROTATE_RIGHT_MIN << std::endl;
-    std::cout << "Flip video horizontally: " << (char)FLIP_HORIZONTAL << " or " << (char) FLIP_HORIZONTAL_MIN << std::endl;
-    std::cout << "Flip video vertically: " << (char) FLIP_VERTICAL << " or " << (char) FLIP_VERTICAL_MIN << std::endl;
-    std::cout << "Change contrast: " << (char) CONTRAST << " or " << (char) CONTRAST_MIN << std::endl;
-    std::cout << "Toggle recording: " << (char) RECORDING << " or " << (char) RECORDING_MIN << std::endl;
-    
+    std::cout << "Clear filters: " << (char)DO_NOTHING << " or " << (char)DO_NOTHING_MIN << std::endl;
+    std::cout << "Sobel filter: " << (char)SOBEL << " or " << (char)SOBEL_MIN << std::endl;
+    std::cout << "Gauss filter: " << (char)GAUSS << " or " << (char)GAUSS_MIN << std::endl;
+    std::cout << "Detect edges: " << (char)EDGES << " or " << (char)EDGES_MIN << std::endl;
+    std::cout << "Grayscale: " << (char)GRAYSCALE << " or " << (char)GRAYSCALE_MIN << std::endl;
+    std::cout << "Resize (1/2, both dimensions): " << (char)RESIZE << " or " << (char)RESIZE_MIN << std::endl;
+    std::cout << "Negative: " << (char)NEGATIVE << " or " << (char)NEGATIVE_MIN << std::endl;
+    std::cout << "Enhance brightness: " << (char)BRIGHTNESS << " or " << (char)BRIGHTNESS_MIN << std::endl;
+    std::cout << "Rotate video 90º left: " << (char)ROTATE_LEFT << " or " << (char)ROTATE_LEFT_MIN << std::endl;
+    std::cout << "Rotate video 90º right: " << (char)ROTATE_RIGHT << " or " << (char)ROTATE_RIGHT_MIN << std::endl;
+    std::cout << "Flip video horizontally: " << (char)FLIP_HORIZONTAL << " or " << (char)FLIP_HORIZONTAL_MIN << std::endl;
+    std::cout << "Flip video vertically: " << (char)FLIP_VERTICAL << " or " << (char)FLIP_VERTICAL_MIN << std::endl;
+    std::cout << "Change contrast: " << (char)CONTRAST << " or " << (char)CONTRAST_MIN << std::endl;
+    std::cout << "Toggle recording: " << (char)RECORDING << " or " << (char)RECORDING_MIN << std::endl;
+
     std::cout << "PRESS ESC TO EXIT" << std::endl;
 }
 
@@ -242,26 +258,26 @@ void displayFrame(Mat frame, Mat resultFrame) {
 }
 
 Mat sobelFilter(Mat frame) {
-        int ddepth = CV_16S;
-        Mat grad_x, grad_y;
-        Mat abs_grad_x, abs_grad_y;
-        Mat src_gray;
-        Mat resultFrame;
-        src_gray = calcLuminance(frame);
-        Sobel(src_gray, grad_x, ddepth, 1, 0, 3, 1, 0, BORDER_DEFAULT);
-        Sobel(src_gray, grad_y, ddepth, 0, 1, 3, 1, 0, BORDER_DEFAULT);
-        // converting back to CV_8U
-        convertScaleAbs(grad_x, abs_grad_x);
-        convertScaleAbs(grad_y, abs_grad_y);
-        addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, resultFrame, -1);
-        return resultFrame;
+    int ddepth = CV_16S;
+    Mat grad_x, grad_y;
+    Mat abs_grad_x, abs_grad_y;
+    Mat src_gray;
+    Mat resultFrame;
+    src_gray = calcLuminance(frame);
+    Sobel(src_gray, grad_x, ddepth, 1, 0, 3, 1, 0, BORDER_DEFAULT);
+    Sobel(src_gray, grad_y, ddepth, 0, 1, 3, 1, 0, BORDER_DEFAULT);
+    // converting back to CV_8U
+    convertScaleAbs(grad_x, abs_grad_x);
+    convertScaleAbs(grad_y, abs_grad_y);
+    addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, resultFrame, -1);
+    return resultFrame;
 }
 
 
 Mat gaussFilter(Mat frame, int kernelSize) {
     Mat resultFrame;
     // Kernel size cannot be an even number
-    kernelSize = (kernelSize % 2 == 0)?kernelSize+1:kernelSize;
+    kernelSize = (kernelSize % 2 == 0) ? kernelSize + 1 : kernelSize;
     GaussianBlur(frame, resultFrame, Size(kernelSize, kernelSize), 0, 0, BORDER_DEFAULT);
     return resultFrame;
 }
@@ -285,15 +301,15 @@ Mat detectEdges(Mat frame) {
 
 Mat resizeVideo(Mat frame) {
     Mat resultFrame;
-    resize(frame, resultFrame, Size(frame.cols/2, frame.rows/2));
+    resize(frame, resultFrame, Size(frame.cols / 2, frame.rows / 2));
     return resultFrame;
 }
 
 Mat calcNegative(Mat frame) {
-    Mat temp = Mat(frame.rows, frame.cols, frame.type(),Scalar(1,1,1))*255;
+    Mat temp = Mat(frame.rows, frame.cols, frame.type(), Scalar(1, 1, 1)) * 255;
     Mat resultFrame;
     subtract(temp, frame, resultFrame);
-    
+
     return resultFrame;
 }
 
@@ -329,6 +345,6 @@ Mat flipVertically(Mat frame) {
 
 Mat adjustContrast(Mat frame, int value) {
     Mat resultFrame;
-    frame.convertTo(resultFrame, -1, (double)value/127, 0);
+    frame.convertTo(resultFrame, -1, (double)value / 127, 0);
     return resultFrame;
 }
