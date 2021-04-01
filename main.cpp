@@ -149,18 +149,18 @@ int main(int argc, char** argv)
             break;
         }
         else if (keyPressed == DO_NOTHING || keyPressed == DO_NOTHING_MIN) {
-            sobel          = false;
-            gauss          = false;
-            edges          = false;
-            resize         = false;
-            negative       = false;
-            brightness     = false;
-            grayscale      = false;
-            rotateRightF   = false;
-            rotateLeftF    = false;
+            sobel = false;
+            gauss = false;
+            edges = false;
+            resize = false;
+            negative = false;
+            brightness = false;
+            grayscale = false;
+            rotateRightF = false;
+            rotateLeftF = false;
             flipHorizontal = false;
-            flipVertical   = false;
-            contrast       = false;
+            flipVertical = false;
+            contrast = false;
         }
         else if (keyPressed == SOBEL || keyPressed == SOBEL_MIN) {
             sobel = !sobel;
@@ -294,7 +294,7 @@ Mat calcLuminance(Mat frame) {
 Mat detectEdges(Mat frame) {
     frame = calcLuminance(frame);
     Mat resultFrame;
-    frame = gaussFilter(frame, 9);
+    
     Canny(frame, resultFrame, 1, THRESHOLD_CANNY, 3, false);
     return resultFrame;
 }
