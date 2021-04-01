@@ -28,3 +28,5 @@ Makefile
 output.avi
 *.o
 *.json
+.vscode/settings.json
+CMakeFiles/TP3.dir/main.cpp.o
